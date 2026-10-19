@@ -1,3 +1,4 @@
+
 import { google } from "googleapis";
 import { searchconsole_v1 } from "googleapis";
 import * as fs from "fs";
@@ -22,44 +23,39 @@ export function getConfig() {
       ? [siteUrl]
       : [];
 
-  if (mode === "service_account") {
-    const keyFile = process.env.GSC_KEY_FILE;
-    if (!keyFile) {
-      throw new Error(
-        "GSC_KEY_FILE environment variable is required in service_account mode. " +
-        "Set it to the path of your service account JSON key file, " +
-        "or switch to OAuth by setting GSC_AUTH_MODE=oauth."
-      );
-    }
-    if (!siteUrl && siteUrls.length === 0) {
-      throw new Error(
-        "GSC_SITE_URL environment variable is required. " +
-        "Set it to your GSC property URL (e.g. https://yoursite.com/ or sc-domain:yoursite.com)."
-      );
-    }
-    if (!fs.existsSync(keyFile)) {
-      throw new Error(`Service account key file not found at: ${keyFile}`);
-    }
-    return { keyFile, siteUrl: siteUrl || siteUrls[0], siteUrls };
-  }
-
-  // OAuth mode
   if (!siteUrl && siteUrls.length === 0) {
     throw new Error(
-      "GSC_SITE_URL environment variable is required. " +
+      "GSC_SITE_URL or GSC_SITE_URLS environment variable is required. " +
       "Set it to your GSC property URL (e.g. https://yoursite.com/ or sc-domain:yoursite.com)."
     );
   }
-  return { keyFile: undefined, siteUrl: siteUrl || siteUrls[0], siteUrls };
+
+  if (mode === "service_account") {
+    const keyFile = process.env.GSC_KEY_FILE;
+
+    if (keyFile && !fs.existsSync(keyFile)) {
+      throw new Error(`Service account key file not found at: ${keyFile}`);
+    }
+
+    return {
+      keyFile,
+      siteUrl: siteUrl || siteUrls[0],
+      siteUrls,
+    };
+  }
+
+  return {
+    keyFile: undefined,
+    siteUrl: siteUrl || siteUrls[0],
+    siteUrls,
+  };
 }
 
 async function getServiceAccountClient(): Promise<searchconsole_v1.Searchconsole> {
   const { keyFile } = getConfig();
 
-  // Same scope set as the OAuth flow, including auth/indexing on the full
-  // tier so submit_url / submit_batch work in service-account mode too (#2).
   const auth = new google.auth.GoogleAuth({
-    keyFile,
+    ...(keyFile ? { keyFile } : {}),
     scopes: scopesForTier(getScopeTier()),
   });
 
