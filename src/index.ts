@@ -621,7 +621,7 @@ async function main() {
 
       res.end(JSON.stringify({
         resource:
-          "https://gsc-mcp-server-180590969315.europe-west3.run.app/mcp",
+          "https://gsc-mcp-server-180590969315.europe-west3.run.app/mcp/",
         authorization_servers: [
           "https://dev-qcfguwv7uyogdyng.us.auth0.com/"
         ],
