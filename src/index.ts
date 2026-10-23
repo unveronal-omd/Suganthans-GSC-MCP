@@ -40,6 +40,7 @@ import { genaiConversationQueries } from "./tools/genai-conversation-queries.js"
 // v2.5: the bridge from "which pages fail in image search" to "why". Fetches
 // the user's own pages and audits the on-page image factors.
 import { imagePageAudit } from "./tools/image-page-audit.js";
+import { verifyAuth0Token } from "./auth0.js";
 
 function createServer(): McpServer {
   const server = new McpServer({
@@ -604,6 +605,31 @@ async function main() {
 
     const httpServer = createHttpServer(async (req, res) => {
       const pathname = new URL(req.url || "/", "http://localhost").pathname;
+      if (
+      pathname === "/.well-known/oauth-protected-resource" ||
+      pathname === "/.well-known/oauth-protected-resource/mcp"
+    ) {
+      if (req.method !== "GET") {
+        res.writeHead(405, { Allow: "GET" }).end();
+        return;
+      }
+
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=300",
+      });
+
+      res.end(JSON.stringify({
+        resource:
+          "https://gsc-mcp-server-180590969315.europe-west3.run.app/mcp",
+        authorization_servers: [
+          "https://dev-qcfguwv7uyogdyng.us.auth0.com/"
+        ],
+        scopes_supported: ["use:mcp"],
+        bearer_methods_supported: ["header"]
+      }));
+      return;
+    }
       if (pathname === "/health" && req.method === "GET") {
         res.writeHead(200, { "Content-Type": "text/plain" });
         res.end("ok");
@@ -616,6 +642,23 @@ async function main() {
       // Stateless Streamable HTTP: no persistent sessions or SSE endpoint.
       if (req.method !== "POST") {
         res.writeHead(405, { Allow: "POST" }).end("Method not allowed");
+        return;
+      }
+
+      // Require a valid Auth0 access token before processing MCP requests.
+      const authorized = await verifyAuth0Token(req.headers.authorization);
+
+      if (!authorized) {
+        res.writeHead(401, {
+          "Content-Type": "application/json",
+          "WWW-Authenticate":
+            'Bearer resource_metadata="https://gsc-mcp-server-180590969315.europe-west3.run.app/.well-known/oauth-protected-resource"',
+        });
+
+        res.end(JSON.stringify({
+          error: "unauthorized",
+          error_description: "A valid Auth0 access token with use:mcp scope is required",
+        }));
         return;
       }
 
