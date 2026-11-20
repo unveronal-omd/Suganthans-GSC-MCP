@@ -24,5 +24,5 @@ interface SiteSnapshot {
         position: number;
     };
 }
-export declare function siteSnapshot(days?: number): Promise<SiteSnapshot>;
+export declare function siteSnapshot(days?: number, siteUrl?: string): Promise<SiteSnapshot>;
 export {};

@@ -3,5 +3,5 @@ interface ReportResult {
     sectionsIncluded: string[];
     summary: string;
 }
-export declare function generateReport(outputPath?: string, days?: number, includeSections?: string[]): Promise<ReportResult>;
+export declare function generateReport(outputPath?: string, days?: number, includeSections?: string[], siteUrlOverride?: string): Promise<ReportResult>;
 export {};

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.topicClusterPerformance = topicClusterPerformance;
 const analytics_js_1 = require("../analytics.js");
-async function topicClusterPerformance(pathPattern, days = 28) {
+async function topicClusterPerformance(pathPattern, days = 28, siteUrl) {
     const { startDate, endDate } = (0, analytics_js_1.getDateRange)(days);
     // Fetch page-level data filtered by URL pattern
     const pageRows = await (0, analytics_js_1.fetchAllRows)({
@@ -20,7 +20,7 @@ async function topicClusterPerformance(pathPattern, days = 28) {
                 ],
             },
         ],
-    });
+    }, siteUrl);
     // Fetch query-level data filtered by URL pattern
     const queryRows = await (0, analytics_js_1.fetchAllRows)({
         startDate,
@@ -37,7 +37,7 @@ async function topicClusterPerformance(pathPattern, days = 28) {
                 ],
             },
         ],
-    });
+    }, siteUrl);
     let totalClicks = 0;
     let totalImpressions = 0;
     let positionWeight = 0;

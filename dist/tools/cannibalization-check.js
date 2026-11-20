@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cannibalizationCheck = cannibalizationCheck;
 const analytics_js_1 = require("../analytics.js");
-async function cannibalizationCheck(days = 28, minImpressions = 50) {
+async function cannibalizationCheck(days = 28, minImpressions = 50, siteUrl) {
     const { startDate, endDate } = (0, analytics_js_1.getDateRange)(days);
     const rows = await (0, analytics_js_1.fetchAllRows)({
         startDate,
         endDate,
         dimensions: ["query", "page"],
-    });
+    }, siteUrl);
     // Group by query
     const queryMap = new Map();
     for (const row of rows) {

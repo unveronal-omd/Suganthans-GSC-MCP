@@ -4,11 +4,11 @@ exports.contentRecommendations = contentRecommendations;
 const quick_wins_js_1 = require("./quick-wins.js");
 const content_gaps_js_1 = require("./content-gaps.js");
 const cannibalization_check_js_1 = require("./cannibalization-check.js");
-async function contentRecommendations(days = 28, maxRecommendations = 10) {
+async function contentRecommendations(days = 28, maxRecommendations = 10, siteUrl) {
     const [wins, gaps, cannibalization] = await Promise.all([
-        (0, quick_wins_js_1.quickWins)(days, 50, 15),
-        (0, content_gaps_js_1.contentGaps)(90, 30, 20),
-        (0, cannibalization_check_js_1.cannibalizationCheck)(days, 30),
+        (0, quick_wins_js_1.quickWins)(days, 50, 15, siteUrl),
+        (0, content_gaps_js_1.contentGaps)(90, 30, 20, siteUrl),
+        (0, cannibalization_check_js_1.cannibalizationCheck)(days, 30, siteUrl),
     ]);
     const recs = [];
     // Category A: Update existing pages (group quick wins by their ranking page)

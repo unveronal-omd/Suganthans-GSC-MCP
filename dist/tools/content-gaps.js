@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contentGaps = contentGaps;
 const analytics_js_1 = require("../analytics.js");
-async function contentGaps(days = 90, minImpressions = 50, minPosition = 20) {
+async function contentGaps(days = 90, minImpressions = 50, minPosition = 20, siteUrl) {
     const { startDate, endDate } = (0, analytics_js_1.getDateRange)(days);
     const rows = await (0, analytics_js_1.fetchAllRows)({
         startDate,
         endDate,
         dimensions: ["query"],
-    });
+    }, siteUrl);
     const gaps = [];
     for (const row of rows) {
         if (row.impressions < minImpressions)

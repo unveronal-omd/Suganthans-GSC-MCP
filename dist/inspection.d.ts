@@ -13,4 +13,4 @@ export interface InspectionResult {
     verdict: string;
     issues: string[];
 }
-export declare function inspectUrl(url: string): Promise<InspectionResult>;
+export declare function inspectUrl(url: string, siteUrlOverride?: string): Promise<InspectionResult>;

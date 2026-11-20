@@ -6,5 +6,5 @@ interface QuickWin {
     position: number;
     opportunity: number;
 }
-export declare function quickWins(days?: number, minImpressions?: number, maxPosition?: number): Promise<QuickWin[]>;
+export declare function quickWins(days?: number, minImpressions?: number, maxPosition?: number, siteUrl?: string): Promise<QuickWin[]>;
 export {};
