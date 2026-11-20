@@ -13,8 +13,7 @@ interface ClusterPerformance {
 
 export async function topicClusterPerformance(
   pathPattern: string,
-  days: number = 28,
-  siteUrl?: string
+  days: number = 28
 ): Promise<ClusterPerformance> {
   const { startDate, endDate } = getDateRange(days);
 
@@ -34,7 +33,7 @@ export async function topicClusterPerformance(
         ],
       },
     ],
-  }, siteUrl);
+  });
 
   // Fetch query-level data filtered by URL pattern
   const queryRows = await fetchAllRows({
@@ -52,7 +51,7 @@ export async function topicClusterPerformance(
         ],
       },
     ],
-  }, siteUrl);
+  });
 
   let totalClicks = 0;
   let totalImpressions = 0;

@@ -22,8 +22,7 @@ export async function verifyClaim(
   expectedValue: number,
   url?: string,
   query?: string,
-  days: number = 28,
-  siteUrl?: string
+  days: number = 28
 ): Promise<VerificationResult> {
   const { startDate, endDate } = getDateRange(days);
 
@@ -57,7 +56,7 @@ export async function verifyClaim(
     endDate,
     dimensions: dimensions.length > 0 ? dimensions : ["date"],
     dimensionFilterGroups: filters.length > 0 ? filters : undefined,
-  }, siteUrl);
+  });
 
   let actualValue: number | null = null;
 

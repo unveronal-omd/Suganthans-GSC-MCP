@@ -6,7 +6,7 @@ const analytics_js_1 = require("../analytics.js");
  * Verify a specific numeric claim against live GSC data.
  * Use this to self-check before presenting findings to the user.
  */
-async function verifyClaim(claim, metric, expectedValue, url, query, days = 28, siteUrl) {
+async function verifyClaim(claim, metric, expectedValue, url, query, days = 28) {
     const { startDate, endDate } = (0, analytics_js_1.getDateRange)(days);
     const dimensions = [];
     const filters = [];
@@ -36,7 +36,7 @@ async function verifyClaim(claim, metric, expectedValue, url, query, days = 28, 
         endDate,
         dimensions: dimensions.length > 0 ? dimensions : ["date"],
         dimensionFilterGroups: filters.length > 0 ? filters : undefined,
-    }, siteUrl);
+    });
     let actualValue = null;
     if (rows.length > 0) {
         if (metric === "clicks") {

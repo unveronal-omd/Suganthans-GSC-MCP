@@ -16,8 +16,8 @@ interface InspectionSummary {
   summary: string;
 }
 
-export async function inspectUrlTool(url: string, siteUrl?: string): Promise<InspectionSummary> {
-  const result = await inspectUrl(url, siteUrl);
+export async function inspectUrlTool(url: string): Promise<InspectionSummary> {
+  const result = await inspectUrl(url);
 
   let summary: string;
 

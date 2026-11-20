@@ -38,11 +38,6 @@ const genai_conversation_queries_js_1 = require("./tools/genai-conversation-quer
 // v2.5: the bridge from "which pages fail in image search" to "why". Fetches
 // the user's own pages and audits the on-page image factors.
 const image_page_audit_js_1 = require("./tools/image-page-audit.js");
-const list_properties_js_1 = require("./tools/list-properties.js");
-// Shared schema for the per-call property override. Every tool that reads a
-// property accepts it; omitted, the tool falls back to GSC_SITE_URL.
-const siteUrlParam = zod_1.z.string().optional().describe("GSC property to run against (e.g. sc-domain:example.com or https://www.example.com/). " +
-    "Defaults to the configured property. Call list_properties to see which ones are available.");
 const server = new mcp_js_1.McpServer({
     name: "gsc-mcp",
     version: "2.5.1",
@@ -52,10 +47,9 @@ server.tool("quick_wins", "Find keywords you're almost ranking for that could be
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
     min_impressions: zod_1.z.number().default(100).describe("Minimum impressions threshold"),
     max_position: zod_1.z.number().default(15).describe("Maximum position to include"),
-    site_url: siteUrlParam,
-}, async ({ days, min_impressions, max_position, site_url }) => {
-    const results = await (0, quick_wins_js_1.quickWins)(days, min_impressions, max_position, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "quick_wins", { days, min_impressions, max_position, site_url });
+}, async ({ days, min_impressions, max_position }) => {
+    const results = await (0, quick_wins_js_1.quickWins)(days, min_impressions, max_position);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "quick_wins", { days, min_impressions, max_position });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -64,10 +58,9 @@ server.tool("quick_wins", "Find keywords you're almost ranking for that could be
 server.tool("ctr_opportunities", "Find pages with high impressions but CTR significantly below expected for their position. These are title/meta description optimisation candidates." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
     min_impressions: zod_1.z.number().default(500).describe("Minimum impressions threshold"),
-    site_url: siteUrlParam,
-}, async ({ days, min_impressions, site_url }) => {
-    const results = await (0, ctr_opportunities_js_1.ctrOpportunities)(days, min_impressions, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "ctr_opportunities", { days, min_impressions, site_url });
+}, async ({ days, min_impressions }) => {
+    const results = await (0, ctr_opportunities_js_1.ctrOpportunities)(days, min_impressions);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "ctr_opportunities", { days, min_impressions });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -75,10 +68,9 @@ server.tool("ctr_opportunities", "Find pages with high impressions but CTR signi
 // 3. Traffic Drops
 server.tool("traffic_drops", "Find pages that lost the most traffic recently. Compares current period vs prior period and diagnoses whether each drop is a ranking loss, CTR collapse, or demand decline." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     days: zod_1.z.number().default(28).describe("Number of days per period to compare"),
-    site_url: siteUrlParam,
-}, async ({ days, site_url }) => {
-    const results = await (0, traffic_drops_js_1.trafficDrops)(days, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "traffic_drops", { days, site_url });
+}, async ({ days }) => {
+    const results = await (0, traffic_drops_js_1.trafficDrops)(days);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "traffic_drops", { days });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -88,10 +80,9 @@ server.tool("content_gaps", "Find topics you should create content for. Returns 
     days: zod_1.z.number().default(90).describe("Number of days to analyse"),
     min_impressions: zod_1.z.number().default(50).describe("Minimum impressions threshold"),
     min_position: zod_1.z.number().default(20).describe("Minimum position (queries ranking worse than this)"),
-    site_url: siteUrlParam,
-}, async ({ days, min_impressions, min_position, site_url }) => {
-    const results = await (0, content_gaps_js_1.contentGaps)(days, min_impressions, min_position, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "content_gaps", { days, min_impressions, min_position, site_url });
+}, async ({ days, min_impressions, min_position }) => {
+    const results = await (0, content_gaps_js_1.contentGaps)(days, min_impressions, min_position);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "content_gaps", { days, min_impressions, min_position });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -99,21 +90,19 @@ server.tool("content_gaps", "Find topics you should create content for. Returns 
 // 5. Site Snapshot
 server.tool("site_snapshot", "Get a quick overview of how the site is performing. Returns total clicks, impressions, CTR, and position with a comparison to the prior period." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     days: zod_1.z.number().default(28).describe("Number of days per period"),
-    site_url: siteUrlParam,
-}, async ({ days, site_url }) => {
-    const results = await (0, site_snapshot_js_1.siteSnapshot)(days, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "site_snapshot", { days, site_url });
+}, async ({ days }) => {
+    const results = await (0, site_snapshot_js_1.siteSnapshot)(days);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "site_snapshot", { days });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
 });
 // 6. Inspect URL
 server.tool("inspect_url", "Check if a URL is indexed and why or why not. Returns indexing status, last crawl date, canonical info, robots/noindex issues, and mobile usability in one answer." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX, {
-    url: zod_1.z.string().describe("The full URL to inspect (must belong to the property in site_url)"),
-    site_url: siteUrlParam,
-}, async ({ url, site_url }) => {
-    const results = await (0, inspect_url_js_1.inspectUrlTool)(url, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "inspect_url", { url, site_url });
+    url: zod_1.z.string().describe("The full URL to inspect"),
+}, async ({ url }) => {
+    const results = await (0, inspect_url_js_1.inspectUrlTool)(url);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "inspect_url", { url });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -122,20 +111,17 @@ server.tool("inspect_url", "Check if a URL is indexed and why or why not. Return
 server.tool("cannibalization_check", "Find keywords where multiple pages from your site compete against each other. Shows which page ranks higher, the position gap, and combined impressions being split." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
     min_impressions: zod_1.z.number().default(50).describe("Minimum combined impressions for a query"),
-    site_url: siteUrlParam,
-}, async ({ days, min_impressions, site_url }) => {
-    const results = await (0, cannibalization_check_js_1.cannibalizationCheck)(days, min_impressions, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "cannibalization_check", { days, min_impressions, site_url });
+}, async ({ days, min_impressions }) => {
+    const results = await (0, cannibalization_check_js_1.cannibalizationCheck)(days, min_impressions);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "cannibalization_check", { days, min_impressions });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
 });
 // 8. Content Decay
-server.tool("content_decay", "Find pages that are slowly dying with consistent traffic decline over three consecutive 30-day periods. One bad month is noise; three consecutive bad months is a problem." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
-    site_url: siteUrlParam,
-}, async ({ site_url }) => {
-    const results = await (0, content_decay_js_1.contentDecay)(site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "content_decay", { site_url });
+server.tool("content_decay", "Find pages that are slowly dying with consistent traffic decline over three consecutive 30-day periods. One bad month is noise; three consecutive bad months is a problem." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {}, async () => {
+    const results = await (0, content_decay_js_1.contentDecay)();
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "content_decay", {});
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -144,10 +130,9 @@ server.tool("content_decay", "Find pages that are slowly dying with consistent t
 server.tool("topic_cluster_performance", "See how a group of pages performs as a whole. Aggregates clicks, impressions, CTR, and position for all pages matching a URL path pattern, plus top 5 pages and queries." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     path_pattern: zod_1.z.string().describe("URL path pattern to match (e.g. /blog/seo)"),
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
-    site_url: siteUrlParam,
-}, async ({ path_pattern, days, site_url }) => {
-    const results = await (0, topic_cluster_performance_js_1.topicClusterPerformance)(path_pattern, days, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "topic_cluster_performance", { path_pattern, days, site_url });
+}, async ({ path_pattern, days }) => {
+    const results = await (0, topic_cluster_performance_js_1.topicClusterPerformance)(path_pattern, days);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "topic_cluster_performance", { path_pattern, days });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -156,10 +141,9 @@ server.tool("topic_cluster_performance", "See how a group of pages performs as a
 server.tool("ctr_vs_benchmark", "Compare your actual CTR per page against industry benchmarks by position. Flags pages significantly underperforming for their ranking position." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
     min_impressions: zod_1.z.number().default(200).describe("Minimum impressions threshold"),
-    site_url: siteUrlParam,
-}, async ({ days, min_impressions, site_url }) => {
-    const results = await (0, ctr_vs_benchmark_js_1.ctrVsBenchmark)(days, min_impressions, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "ctr_vs_benchmark", { days, min_impressions, site_url });
+}, async ({ days, min_impressions }) => {
+    const results = await (0, ctr_vs_benchmark_js_1.ctrVsBenchmark)(days, min_impressions);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "ctr_vs_benchmark", { days, min_impressions });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -172,9 +156,8 @@ server.tool("verify_claim", "Verify a specific numeric claim against live GSC da
     url: zod_1.z.string().optional().describe("Filter to a specific URL"),
     query: zod_1.z.string().optional().describe("Filter to a specific search query"),
     days: zod_1.z.number().default(28).describe("Number of days to check"),
-    site_url: siteUrlParam,
-}, async ({ claim, metric, expected_value, url, query, days, site_url }) => {
-    const results = await (0, verify_claim_js_1.verifyClaim)(claim, metric, expected_value, url, query, days, site_url);
+}, async ({ claim, metric, expected_value, url, query, days }) => {
+    const results = await (0, verify_claim_js_1.verifyClaim)(claim, metric, expected_value, url, query, days);
     return {
         content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
     };
@@ -191,11 +174,11 @@ server.tool("advanced_search_analytics", "Run a custom search analytics query wi
     row_limit: zod_1.z.number().default(100).describe("Maximum rows to return (max 500)"),
     order_by: zod_1.z.string().default("clicks").describe("Sort by: clicks, impressions, ctr, position"),
     order_direction: zod_1.z.string().default("descending").describe("Sort direction: ascending, descending"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the default site URL"),
     search_type: zod_1.z.enum(["web", "image", "video", "news", "discover", "googleNews"]).optional().describe("Filter by GSC search surface. Defaults to web. Use 'image' to query Google Images data."),
 }, async ({ days, dimensions, filters, row_limit, order_by, order_direction, site_url, search_type }) => {
     const results = await (0, advanced_search_analytics_js_1.advancedSearchAnalytics)(days, dimensions, filters, row_limit, order_by, order_direction, site_url, search_type);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "advanced_search_analytics", { days, dimensions, filters, row_limit, order_by, search_type, site_url });
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "advanced_search_analytics", { days, dimensions, filters, row_limit, order_by, search_type });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -206,10 +189,9 @@ server.tool("check_alerts", "Check for SEO alerts: position drops, CTR collapses
     position_drop_threshold: zod_1.z.number().default(20).describe("Alert if position drops more than this many spots"),
     ctr_drop_threshold: zod_1.z.number().default(50).describe("Alert if CTR drops more than this percentage"),
     click_drop_threshold: zod_1.z.number().default(30).describe("Alert if clicks drop more than this percentage"),
-    site_url: siteUrlParam,
-}, async ({ days, position_drop_threshold, ctr_drop_threshold, click_drop_threshold, site_url }) => {
-    const results = await (0, check_alerts_js_1.checkAlerts)(days, position_drop_threshold, ctr_drop_threshold, click_drop_threshold, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "check_alerts", { days, position_drop_threshold, ctr_drop_threshold, click_drop_threshold, site_url });
+}, async ({ days, position_drop_threshold, ctr_drop_threshold, click_drop_threshold }) => {
+    const results = await (0, check_alerts_js_1.checkAlerts)(days, position_drop_threshold, ctr_drop_threshold, click_drop_threshold);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "check_alerts", { days, position_drop_threshold, ctr_drop_threshold, click_drop_threshold });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -218,10 +200,9 @@ server.tool("check_alerts", "Check for SEO alerts: position drops, CTR collapses
 server.tool("content_recommendations", "Get actionable content recommendations by cross-referencing quick wins, content gaps, and cannibalisation data. Returns prioritised actions: pages to update, content to create, and pages to consolidate." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX, {
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
     max_recommendations: zod_1.z.number().default(10).describe("Maximum number of recommendations"),
-    site_url: siteUrlParam,
-}, async ({ days, max_recommendations, site_url }) => {
-    const results = await (0, content_recommendations_js_1.contentRecommendations)(days, max_recommendations, site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "content_recommendations", { days, max_recommendations, site_url });
+}, async ({ days, max_recommendations }) => {
+    const results = await (0, content_recommendations_js_1.contentRecommendations)(days, max_recommendations);
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "content_recommendations", { days, max_recommendations });
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -231,9 +212,8 @@ server.tool("generate_report", "Generate a comprehensive markdown performance re
     output_path: zod_1.z.string().optional().describe("File path to save the report (default: ./gsc-report-{date}.md)"),
     days: zod_1.z.number().default(28).describe("Number of days to analyse"),
     include_sections: zod_1.z.array(zod_1.z.string()).optional().describe("Sections: snapshot, alerts, quick_wins, traffic_drops, content_decay, recommendations"),
-    site_url: siteUrlParam,
-}, async ({ output_path, days, include_sections, site_url }) => {
-    const results = await (0, generate_report_js_1.generateReport)(output_path, days, include_sections, site_url);
+}, async ({ output_path, days, include_sections }) => {
+    const results = await (0, generate_report_js_1.generateReport)(output_path, days, include_sections);
     return {
         content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
     };
@@ -272,19 +252,16 @@ server.tool("submit_batch", "Submit up to 200 URLs to Google's Indexing API in o
 // 19. Submit Sitemap
 server.tool("submit_sitemap", "Notify Google of a new or updated sitemap. Triggers Google to recrawl the sitemap and discover new pages." + guardrails_js_1.GUARDRAIL_SUFFIX, {
     sitemap_url: zod_1.z.string().optional().describe("Full sitemap URL (defaults to {site_url}/sitemap.xml)"),
-    site_url: siteUrlParam,
-}, async ({ sitemap_url, site_url }) => {
-    const results = await (0, submit_sitemap_js_1.submitSitemap)(sitemap_url, site_url);
+}, async ({ sitemap_url }) => {
+    const results = await (0, submit_sitemap_js_1.submitSitemap)(sitemap_url);
     return {
         content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
     };
 });
 // 20. List Sitemaps
-server.tool("list_sitemaps", "List all sitemaps submitted for the site, with status, errors, warnings, and indexed page counts." + guardrails_js_1.GUARDRAIL_SUFFIX, {
-    site_url: siteUrlParam,
-}, async ({ site_url }) => {
-    const results = await (0, submit_sitemap_js_1.listSitemaps)(site_url);
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "list_sitemaps", { site_url });
+server.tool("list_sitemaps", "List all sitemaps submitted for the site, with status, errors, warnings, and indexed page counts." + guardrails_js_1.GUARDRAIL_SUFFIX, {}, async () => {
+    const results = await (0, submit_sitemap_js_1.listSitemaps)();
+    const wrapped = (0, guardrails_js_1.withMeta)(results, "list_sitemaps", {});
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };
@@ -303,7 +280,7 @@ server.tool("image_keyword_overview", "Top image-search keywords for the site, s
     min_impressions: zod_1.z.number().default(50).describe("Minimum impressions threshold"),
     row_limit: zod_1.z.number().default(50).describe("Maximum rows to return"),
     order_by: zod_1.z.enum(["impressions", "clicks", "position"]).default("impressions").describe("Sort field"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ days, min_impressions, row_limit, order_by, site_url }) => {
     const results = await (0, image_keyword_overview_js_1.imageKeywordOverview)(days, min_impressions, row_limit, order_by, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_keyword_overview", { days, min_impressions, row_limit, order_by, site_url });
@@ -316,7 +293,7 @@ server.tool("image_search_quick_wins", "Find image-search queries ranking at pos
     days: zod_1.z.number().default(90).describe("Number of days to analyse"),
     min_impressions: zod_1.z.number().default(500).describe("Minimum impressions threshold"),
     max_position: zod_1.z.number().default(15).describe("Maximum position to include"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ days, min_impressions, max_position, site_url }) => {
     const results = await (0, image_search_quick_wins_js_1.imageSearchQuickWins)(days, min_impressions, max_position, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_search_quick_wins", { days, min_impressions, max_position, site_url });
@@ -329,7 +306,7 @@ server.tool("compare_web_vs_image", "For each query, returns side-by-side perfor
     days: zod_1.z.number().default(90).describe("Number of days to analyse"),
     min_combined_impressions: zod_1.z.number().default(100).describe("Minimum combined (web + image) impressions to include the query"),
     row_limit: zod_1.z.number().default(50).describe("Maximum rows to return"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ days, min_combined_impressions, row_limit, site_url }) => {
     const results = await (0, compare_web_vs_image_js_1.compareWebVsImage)(days, min_combined_impressions, row_limit, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "compare_web_vs_image", { days, min_combined_impressions, row_limit, site_url });
@@ -343,7 +320,7 @@ server.tool("image_pages_overview", "Pages on the site ranked by image-search pe
     min_impressions: zod_1.z.number().default(100).describe("Minimum impressions threshold"),
     row_limit: zod_1.z.number().default(50).describe("Maximum rows to return"),
     order_by: zod_1.z.enum(["impressions", "clicks", "position"]).default("clicks").describe("Sort field"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ days, min_impressions, row_limit, order_by, site_url }) => {
     const results = await (0, image_pages_overview_js_1.imagePagesOverview)(days, min_impressions, row_limit, order_by, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_pages_overview", { days, min_impressions, row_limit, order_by, site_url });
@@ -357,7 +334,7 @@ server.tool("image_keyword_trends", "Period-over-period trend for image-search q
     min_combined_impressions: zod_1.z.number().default(100).describe("Minimum combined impressions across both windows"),
     row_limit: zod_1.z.number().default(50).describe("Maximum rows to return"),
     order_by: zod_1.z.enum(["impressions_delta", "position_delta"]).default("impressions_delta").describe("Sort field"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ days, min_combined_impressions, row_limit, order_by, site_url }) => {
     const results = await (0, image_keyword_trends_js_1.imageKeywordTrends)(days, min_combined_impressions, row_limit, order_by, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_keyword_trends", { days, min_combined_impressions, row_limit, order_by, site_url });
@@ -371,7 +348,7 @@ server.tool("image_impressions_no_clicks", "Surfaces query and page pairs that e
     min_impressions: zod_1.z.number().default(500).describe("Minimum impressions threshold"),
     max_clicks: zod_1.z.number().default(2).describe("Maximum clicks (filter to pages stuck in the impressions-no-clicks pattern)"),
     row_limit: zod_1.z.number().default(50).describe("Maximum rows to return"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ days, min_impressions, max_clicks, row_limit, site_url }) => {
     const results = await (0, image_impressions_no_clicks_js_1.imageImpressionsNoClicks)(days, min_impressions, max_clicks, row_limit, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_impressions_no_clicks", { days, min_impressions, max_clicks, row_limit, site_url });
@@ -382,7 +359,7 @@ server.tool("image_impressions_no_clicks", "Surfaces query and page pairs that e
 // 27. Image Content Decay
 server.tool("image_content_decay", "Image-search version of content_decay. Three 30-day windows, flags pages with a consistent decline across all three. Defaults to a lower minimum click threshold than the web equivalent because image search produces lower click volumes overall." + guardrails_js_1.GUARDRAIL_SUFFIX + guardrails_js_1.VISUAL_SUFFIX + guardrails_js_1.POSITION_CAVEAT, {
     min_period3_clicks: zod_1.z.number().default(5).describe("Minimum image-search clicks in the oldest 30-day window required for a page to be considered"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com or https://www.example.com/)"),
 }, async ({ min_period3_clicks, site_url }) => {
     const results = await (0, image_content_decay_js_1.imageContentDecay)(min_period3_clicks, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_content_decay", { min_period3_clicks, site_url });
@@ -396,7 +373,7 @@ server.tool("genai_conversation_queries", "Surface AI-conversation exhaust hidin
     min_impressions: zod_1.z.number().default(1).describe("Minimum impressions for a query to be listed (single-impression rows are evidence, not noise, so the default keeps them)"),
     max_rows_per_bucket: zod_1.z.number().default(50).describe("Maximum rows returned per bucket; totals always cover everything"),
     include_timeline: zod_1.z.boolean().default(true).describe("Include the monthly artefact timeline (one extra API call)"),
-    site_url: siteUrlParam,
+    site_url: zod_1.z.string().optional().describe("Override the configured property (e.g. sc-domain:example.com)"),
 }, async ({ days, min_impressions, max_rows_per_bucket, include_timeline, site_url }) => {
     const results = await (0, genai_conversation_queries_js_1.genaiConversationQueries)(days, min_impressions, max_rows_per_bucket, include_timeline, site_url);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "genai_conversation_queries", { days, min_impressions, max_rows_per_bucket, include_timeline, site_url });
@@ -413,14 +390,6 @@ server.tool("image_page_audit", "Fetches pages from YOUR OWN site and audits eve
 }, async ({ urls, fetch_metadata, max_images_per_page, max_images_reported }) => {
     const results = await (0, image_page_audit_js_1.imagePageAudit)(urls, fetch_metadata, max_images_per_page, max_images_reported);
     const wrapped = (0, guardrails_js_1.withMeta)(results, "image_page_audit", { urls, fetch_metadata, max_images_per_page, max_images_reported }, "Live fetch of the audited pages (the user's own site)", "All findings come from fetching and parsing the listed pages and image files at call time. Alt text, attributes, bytes, and dimensions are read values, not estimates. Base your analysis only on this data. An empty alt (alt=\"\") is correct for decorative images; do not report it as a defect.");
-    return {
-        content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
-    };
-});
-// 30. List Properties
-server.tool("list_properties", "List every Search Console property the connected account can access, with its permission level and which one is the default. Call this first when the user asks about a specific site, then pass the matching siteUrl as site_url to the other tools.", {}, async () => {
-    const results = await (0, list_properties_js_1.listProperties)();
-    const wrapped = (0, guardrails_js_1.withMeta)(results, "list_properties", {});
     return {
         content: [{ type: "text", text: JSON.stringify(wrapped, null, 2) }],
     };

@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.inspectUrl = inspectUrl;
 const auth_js_1 = require("./auth.js");
-async function inspectUrl(url, siteUrlOverride) {
+async function inspectUrl(url) {
     const client = await (0, auth_js_1.getSearchConsoleClient)();
-    const siteUrl = siteUrlOverride || (0, auth_js_1.getConfig)().siteUrl;
+    const { siteUrl } = (0, auth_js_1.getConfig)();
     const response = await client.urlInspection.index.inspect({
         requestBody: {
             inspectionUrl: url,

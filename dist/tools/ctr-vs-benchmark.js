@@ -10,13 +10,13 @@ function benchmarkCtr(pos) {
         return BENCHMARK_CTR[Math.floor(pos) - 1];
     return Math.max(0.005, 0.025 - (pos - 10) * 0.002);
 }
-async function ctrVsBenchmark(days = 28, minImpressions = 200, siteUrl) {
+async function ctrVsBenchmark(days = 28, minImpressions = 200) {
     const { startDate, endDate } = (0, analytics_js_1.getDateRange)(days);
     const rows = await (0, analytics_js_1.fetchAllRows)({
         startDate,
         endDate,
         dimensions: ["page"],
-    }, siteUrl);
+    });
     const results = [];
     for (const row of rows) {
         if (row.impressions < minImpressions)

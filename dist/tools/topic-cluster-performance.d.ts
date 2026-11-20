@@ -18,5 +18,5 @@ interface ClusterPerformance {
         position: number;
     }>;
 }
-export declare function topicClusterPerformance(pathPattern: string, days?: number, siteUrl?: string): Promise<ClusterPerformance>;
+export declare function topicClusterPerformance(pathPattern: string, days?: number): Promise<ClusterPerformance>;
 export {};

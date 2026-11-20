@@ -46,20 +46,14 @@ function getAuthMode() {
         return "oauth";
     return "service_account";
 }
-function splitSiteList(value) {
-    return value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [];
-}
 function getConfig() {
     const mode = getAuthMode();
-    // GSC_SITE_URL is meant to hold one property, but a comma-separated list is
-    // tolerated: the first entry becomes the default and the full list doubles
-    // as GSC_SITE_URLS when that is unset. Passing the raw list to the API as a
-    // single property fails every call with a permission error.
-    const defaultList = splitSiteList(process.env.GSC_SITE_URL);
-    const siteUrl = defaultList[0];
+    const siteUrl = process.env.GSC_SITE_URL;
     const siteUrls = process.env.GSC_SITE_URLS
-        ? splitSiteList(process.env.GSC_SITE_URLS)
-        : defaultList;
+        ? process.env.GSC_SITE_URLS.split(",").map((s) => s.trim()).filter(Boolean)
+        : siteUrl
+            ? [siteUrl]
+            : [];
     if (mode === "service_account") {
         const keyFile = process.env.GSC_KEY_FILE;
         if (!keyFile) {

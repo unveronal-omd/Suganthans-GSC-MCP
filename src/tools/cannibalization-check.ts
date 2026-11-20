@@ -13,8 +13,7 @@ interface CannibalizationIssue {
 
 export async function cannibalizationCheck(
   days: number = 28,
-  minImpressions: number = 50,
-  siteUrl?: string
+  minImpressions: number = 50
 ): Promise<CannibalizationIssue[]> {
   const { startDate, endDate } = getDateRange(days);
 
@@ -22,7 +21,7 @@ export async function cannibalizationCheck(
     startDate,
     endDate,
     dimensions: ["query", "page"],
-  }, siteUrl);
+  });
 
   // Group by query
   const queryMap = new Map<

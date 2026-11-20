@@ -60,7 +60,7 @@ function permissionHint(candidates: string[]): string {
   );
 }
 
-export async function submitSitemap(sitemapUrl?: string, siteUrl?: string): Promise<SitemapSubmitResult> {
+export async function submitSitemap(sitemapUrl?: string): Promise<SitemapSubmitResult> {
   if (getAuthMode() === "oauth" && getScopeTier() === "readonly") {
     return {
       siteUrl: "",
@@ -73,7 +73,7 @@ export async function submitSitemap(sitemapUrl?: string, siteUrl?: string): Prom
   }
 
   const client = await getSearchConsoleClient();
-  const configSiteUrl = siteUrl || getConfig().siteUrl;
+  const { siteUrl: configSiteUrl } = getConfig();
   const candidates = sitemapPropertyCandidates(configSiteUrl);
 
   let firstError: any = null;
@@ -102,9 +102,9 @@ export async function submitSitemap(sitemapUrl?: string, siteUrl?: string): Prom
   };
 }
 
-export async function listSitemaps(siteUrl?: string): Promise<SitemapListResult> {
+export async function listSitemaps(): Promise<SitemapListResult> {
   const client = await getSearchConsoleClient();
-  const configSiteUrl = siteUrl || getConfig().siteUrl;
+  const { siteUrl: configSiteUrl } = getConfig();
   const candidates = sitemapPropertyCandidates(configSiteUrl);
 
   let firstError: any = null;

@@ -4,5 +4,5 @@ interface ContentGap {
     clicks: number;
     position: number;
 }
-export declare function contentGaps(days?: number, minImpressions?: number, minPosition?: number, siteUrl?: string): Promise<ContentGap[]>;
+export declare function contentGaps(days?: number, minImpressions?: number, minPosition?: number): Promise<ContentGap[]>;
 export {};

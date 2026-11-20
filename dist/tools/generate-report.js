@@ -50,27 +50,27 @@ const ALL_SECTIONS = [
     "content_decay",
     "recommendations",
 ];
-async function generateReport(outputPath, days = 28, includeSections, siteUrlOverride) {
+async function generateReport(outputPath, days = 28, includeSections) {
     const sections = includeSections && includeSections.length > 0
         ? includeSections.filter((s) => ALL_SECTIONS.includes(s))
         : ALL_SECTIONS;
-    const siteUrl = siteUrlOverride || (0, auth_js_1.getConfig)().siteUrl;
+    const { siteUrl } = (0, auth_js_1.getConfig)();
     const date = new Date().toISOString().split("T")[0];
     const filePath = outputPath || `./gsc-report-${date}.md`;
     // Run all requested tools in parallel
     const promises = {};
     if (sections.includes("snapshot"))
-        promises.snapshot = (0, site_snapshot_js_1.siteSnapshot)(days, siteUrl);
+        promises.snapshot = (0, site_snapshot_js_1.siteSnapshot)(days);
     if (sections.includes("alerts"))
-        promises.alerts = (0, check_alerts_js_1.checkAlerts)(7, undefined, undefined, undefined, siteUrl);
+        promises.alerts = (0, check_alerts_js_1.checkAlerts)(7);
     if (sections.includes("quick_wins"))
-        promises.quick_wins = (0, quick_wins_js_1.quickWins)(days, 50, 15, siteUrl);
+        promises.quick_wins = (0, quick_wins_js_1.quickWins)(days, 50, 15);
     if (sections.includes("traffic_drops"))
-        promises.traffic_drops = (0, traffic_drops_js_1.trafficDrops)(days, siteUrl);
+        promises.traffic_drops = (0, traffic_drops_js_1.trafficDrops)(days);
     if (sections.includes("content_decay"))
-        promises.content_decay = (0, content_decay_js_1.contentDecay)(siteUrl);
+        promises.content_decay = (0, content_decay_js_1.contentDecay)();
     if (sections.includes("recommendations"))
-        promises.recommendations = (0, content_recommendations_js_1.contentRecommendations)(days, 10, siteUrl);
+        promises.recommendations = (0, content_recommendations_js_1.contentRecommendations)(days, 10);
     const results = {};
     const keys = Object.keys(promises);
     const values = await Promise.all(Object.values(promises));

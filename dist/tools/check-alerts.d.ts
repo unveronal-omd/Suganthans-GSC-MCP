@@ -26,5 +26,5 @@ interface AlertResult {
         clickDrop: number;
     };
 }
-export declare function checkAlerts(days?: number, positionDropThreshold?: number, ctrDropThreshold?: number, clickDropThreshold?: number, siteUrl?: string): Promise<AlertResult>;
+export declare function checkAlerts(days?: number, positionDropThreshold?: number, ctrDropThreshold?: number, clickDropThreshold?: number): Promise<AlertResult>;
 export {};

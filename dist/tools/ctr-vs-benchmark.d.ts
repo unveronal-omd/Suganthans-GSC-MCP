@@ -8,5 +8,5 @@ interface CtrBenchmarkResult {
     gap: number;
     verdict: string;
 }
-export declare function ctrVsBenchmark(days?: number, minImpressions?: number, siteUrl?: string): Promise<CtrBenchmarkResult[]>;
+export declare function ctrVsBenchmark(days?: number, minImpressions?: number): Promise<CtrBenchmarkResult[]>;
 export {};

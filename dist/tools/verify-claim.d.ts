@@ -16,5 +16,5 @@ interface VerificationResult {
  * Verify a specific numeric claim against live GSC data.
  * Use this to self-check before presenting findings to the user.
  */
-export declare function verifyClaim(claim: string, metric: "clicks" | "impressions" | "ctr" | "position", expectedValue: number, url?: string, query?: string, days?: number, siteUrl?: string): Promise<VerificationResult>;
+export declare function verifyClaim(claim: string, metric: "clicks" | "impressions" | "ctr" | "position", expectedValue: number, url?: string, query?: string, days?: number): Promise<VerificationResult>;
 export {};

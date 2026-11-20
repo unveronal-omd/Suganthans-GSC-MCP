@@ -8,5 +8,5 @@ interface CannibalizationIssue {
         position: number;
     }>;
 }
-export declare function cannibalizationCheck(days?: number, minImpressions?: number, siteUrl?: string): Promise<CannibalizationIssue[]>;
+export declare function cannibalizationCheck(days?: number, minImpressions?: number): Promise<CannibalizationIssue[]>;
 export {};

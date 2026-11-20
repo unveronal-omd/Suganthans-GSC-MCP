@@ -5,7 +5,7 @@ const analytics_js_1 = require("../analytics.js");
 function formatDate(date) {
     return date.toISOString().split("T")[0];
 }
-async function contentDecay(siteUrl) {
+async function contentDecay() {
     const now = new Date();
     now.setDate(now.getDate() - 1); // yesterday
     // Period 1: 0-30 days ago (most recent)
@@ -23,9 +23,9 @@ async function contentDecay(siteUrl) {
     const p3Start = new Date(p3End);
     p3Start.setDate(p3Start.getDate() - 29);
     const [rows1, rows2, rows3] = await Promise.all([
-        (0, analytics_js_1.fetchAllRows)({ startDate: formatDate(p1Start), endDate: formatDate(p1End), dimensions: ["page"] }, siteUrl),
-        (0, analytics_js_1.fetchAllRows)({ startDate: formatDate(p2Start), endDate: formatDate(p2End), dimensions: ["page"] }, siteUrl),
-        (0, analytics_js_1.fetchAllRows)({ startDate: formatDate(p3Start), endDate: formatDate(p3End), dimensions: ["page"] }, siteUrl),
+        (0, analytics_js_1.fetchAllRows)({ startDate: formatDate(p1Start), endDate: formatDate(p1End), dimensions: ["page"] }),
+        (0, analytics_js_1.fetchAllRows)({ startDate: formatDate(p2Start), endDate: formatDate(p2End), dimensions: ["page"] }),
+        (0, analytics_js_1.fetchAllRows)({ startDate: formatDate(p3Start), endDate: formatDate(p3End), dimensions: ["page"] }),
     ]);
     const toMap = (rows) => {
         const map = new Map();

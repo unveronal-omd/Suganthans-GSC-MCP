@@ -14,21 +14,14 @@ export function getAuthMode(): AuthMode {
   return "service_account";
 }
 
-function splitSiteList(value: string | undefined): string[] {
-  return value ? value.split(",").map((s) => s.trim()).filter(Boolean) : [];
-}
-
 export function getConfig() {
   const mode = getAuthMode();
-  // GSC_SITE_URL is meant to hold one property, but a comma-separated list is
-  // tolerated: the first entry becomes the default and the full list doubles
-  // as GSC_SITE_URLS when that is unset. Passing the raw list to the API as a
-  // single property fails every call with a permission error.
-  const defaultList = splitSiteList(process.env.GSC_SITE_URL);
-  const siteUrl = defaultList[0];
+  const siteUrl = process.env.GSC_SITE_URL;
   const siteUrls = process.env.GSC_SITE_URLS
-    ? splitSiteList(process.env.GSC_SITE_URLS)
-    : defaultList;
+    ? process.env.GSC_SITE_URLS.split(",").map((s) => s.trim()).filter(Boolean)
+    : siteUrl
+      ? [siteUrl]
+      : [];
 
   if (!siteUrl && siteUrls.length === 0) {
     throw new Error(

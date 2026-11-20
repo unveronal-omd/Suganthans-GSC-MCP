@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.trafficDrops = trafficDrops;
 const analytics_js_1 = require("../analytics.js");
-async function trafficDrops(days = 28, siteUrl) {
+async function trafficDrops(days = 28) {
     const current = (0, analytics_js_1.getDateRange)(days);
     const prior = (0, analytics_js_1.getPriorDateRange)(days);
     const [currentRows, priorRows] = await Promise.all([
-        (0, analytics_js_1.fetchAllRows)({ startDate: current.startDate, endDate: current.endDate, dimensions: ["page"] }, siteUrl),
-        (0, analytics_js_1.fetchAllRows)({ startDate: prior.startDate, endDate: prior.endDate, dimensions: ["page"] }, siteUrl),
+        (0, analytics_js_1.fetchAllRows)({ startDate: current.startDate, endDate: current.endDate, dimensions: ["page"] }),
+        (0, analytics_js_1.fetchAllRows)({ startDate: prior.startDate, endDate: prior.endDate, dimensions: ["page"] }),
     ]);
     const priorMap = new Map();
     for (const row of priorRows) {
