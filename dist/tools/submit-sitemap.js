@@ -34,7 +34,7 @@ function permissionHint(candidates) {
     return (` Tried: ${candidates.join(", ")}. Check that the authenticated account ` +
         `has sitemap permission on the property in Search Console.`);
 }
-async function submitSitemap(sitemapUrl) {
+async function submitSitemap(sitemapUrl, siteUrl) {
     if ((0, auth_js_1.getAuthMode)() === "oauth" && (0, oauth_js_1.getScopeTier)() === "readonly") {
         return {
             siteUrl: "",
@@ -45,7 +45,7 @@ async function submitSitemap(sitemapUrl) {
         };
     }
     const client = await (0, auth_js_1.getSearchConsoleClient)();
-    const { siteUrl: configSiteUrl } = (0, auth_js_1.getConfig)();
+    const configSiteUrl = siteUrl || (0, auth_js_1.getConfig)().siteUrl;
     const candidates = sitemapPropertyCandidates(configSiteUrl);
     let firstError = null;
     for (const property of candidates) {
@@ -73,9 +73,9 @@ async function submitSitemap(sitemapUrl) {
         error: (firstError?.message || String(firstError)) + permissionHint(candidates),
     };
 }
-async function listSitemaps() {
+async function listSitemaps(siteUrl) {
     const client = await (0, auth_js_1.getSearchConsoleClient)();
-    const { siteUrl: configSiteUrl } = (0, auth_js_1.getConfig)();
+    const configSiteUrl = siteUrl || (0, auth_js_1.getConfig)().siteUrl;
     const candidates = sitemapPropertyCandidates(configSiteUrl);
     let firstError = null;
     for (const property of candidates) {

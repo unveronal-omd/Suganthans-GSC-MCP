@@ -25,12 +25,13 @@ interface RecommendationResult {
 
 export async function contentRecommendations(
   days: number = 28,
-  maxRecommendations: number = 10
+  maxRecommendations: number = 10,
+  siteUrl?: string
 ): Promise<RecommendationResult> {
   const [wins, gaps, cannibalization] = await Promise.all([
-    quickWins(days, 50, 15),
-    contentGaps(90, 30, 20),
-    cannibalizationCheck(days, 30),
+    quickWins(days, 50, 15, siteUrl),
+    contentGaps(90, 30, 20, siteUrl),
+    cannibalizationCheck(days, 30, siteUrl),
   ]);
 
   const recs: Recommendation[] = [];

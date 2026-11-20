@@ -17,5 +17,5 @@ interface RecommendationResult {
         totalOpportunity: number;
     };
 }
-export declare function contentRecommendations(days?: number, maxRecommendations?: number): Promise<RecommendationResult>;
+export declare function contentRecommendations(days?: number, maxRecommendations?: number, siteUrl?: string): Promise<RecommendationResult>;
 export {};

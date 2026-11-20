@@ -25,24 +25,25 @@ const ALL_SECTIONS = [
 export async function generateReport(
   outputPath?: string,
   days: number = 28,
-  includeSections?: string[]
+  includeSections?: string[],
+  siteUrlOverride?: string
 ): Promise<ReportResult> {
   const sections = includeSections && includeSections.length > 0
     ? includeSections.filter((s) => ALL_SECTIONS.includes(s))
     : ALL_SECTIONS;
 
-  const { siteUrl } = getConfig();
+  const siteUrl = siteUrlOverride || getConfig().siteUrl;
   const date = new Date().toISOString().split("T")[0];
   const filePath = outputPath || `./gsc-report-${date}.md`;
 
   // Run all requested tools in parallel
   const promises: Record<string, Promise<any>> = {};
-  if (sections.includes("snapshot")) promises.snapshot = siteSnapshot(days);
-  if (sections.includes("alerts")) promises.alerts = checkAlerts(7);
-  if (sections.includes("quick_wins")) promises.quick_wins = quickWins(days, 50, 15);
-  if (sections.includes("traffic_drops")) promises.traffic_drops = trafficDrops(days);
-  if (sections.includes("content_decay")) promises.content_decay = contentDecay();
-  if (sections.includes("recommendations")) promises.recommendations = contentRecommendations(days, 10);
+  if (sections.includes("snapshot")) promises.snapshot = siteSnapshot(days, siteUrl);
+  if (sections.includes("alerts")) promises.alerts = checkAlerts(7, undefined, undefined, undefined, siteUrl);
+  if (sections.includes("quick_wins")) promises.quick_wins = quickWins(days, 50, 15, siteUrl);
+  if (sections.includes("traffic_drops")) promises.traffic_drops = trafficDrops(days, siteUrl);
+  if (sections.includes("content_decay")) promises.content_decay = contentDecay(siteUrl);
+  if (sections.includes("recommendations")) promises.recommendations = contentRecommendations(days, 10, siteUrl);
 
   const results: Record<string, any> = {};
   const keys = Object.keys(promises);

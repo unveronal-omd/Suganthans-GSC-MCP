@@ -8,5 +8,5 @@ interface TrafficDrop {
     positionChange: number;
     diagnosis: string;
 }
-export declare function trafficDrops(days?: number): Promise<TrafficDrop[]>;
+export declare function trafficDrops(days?: number, siteUrl?: string): Promise<TrafficDrop[]>;
 export {};

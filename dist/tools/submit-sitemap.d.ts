@@ -22,6 +22,6 @@ interface SitemapListResult {
     }>;
     note?: string;
 }
-export declare function submitSitemap(sitemapUrl?: string): Promise<SitemapSubmitResult>;
-export declare function listSitemaps(): Promise<SitemapListResult>;
+export declare function submitSitemap(sitemapUrl?: string, siteUrl?: string): Promise<SitemapSubmitResult>;
+export declare function listSitemaps(siteUrl?: string): Promise<SitemapListResult>;
 export {};

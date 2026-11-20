@@ -13,5 +13,5 @@ interface InspectionSummary {
     issues: string[];
     summary: string;
 }
-export declare function inspectUrlTool(url: string): Promise<InspectionSummary>;
+export declare function inspectUrlTool(url: string, siteUrl?: string): Promise<InspectionSummary>;
 export {};

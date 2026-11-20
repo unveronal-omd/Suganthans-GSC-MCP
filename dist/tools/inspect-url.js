@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.inspectUrlTool = inspectUrlTool;
 const inspection_js_1 = require("../inspection.js");
-async function inspectUrlTool(url) {
-    const result = await (0, inspection_js_1.inspectUrl)(url);
+async function inspectUrlTool(url, siteUrl) {
+    const result = await (0, inspection_js_1.inspectUrl)(url, siteUrl);
     let summary;
     if (result.indexed && result.issues.length === 0) {
         summary = `This URL is indexed and healthy.${result.lastCrawlTime ? ` Last crawled: ${result.lastCrawlTime}.` : ""}`;

@@ -9,5 +9,5 @@ interface DecayingPage {
     period3Position: number;
     positionTrend: string;
 }
-export declare function contentDecay(): Promise<DecayingPage[]>;
+export declare function contentDecay(siteUrl?: string): Promise<DecayingPage[]>;
 export {};
