@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
+import { createServer as createHttpServer } from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
@@ -47,10 +49,11 @@ const siteUrlParam = z.string().optional().describe(
   "Defaults to the configured property. Call list_properties to see which ones are available."
 );
 
-const server = new McpServer({
-  name: "gsc-mcp",
-  version: "2.5.1",
-});
+function createServer(): McpServer {
+  const server = new McpServer({
+    name: "gsc-mcp",
+    version: "2.5.1",
+  });
 
 // 1. Quick Wins
 server.tool(
@@ -629,6 +632,111 @@ async function main() {
     process.exit(0);
   }
 
+  // Cloud Run provides PORT. Set MCP_TRANSPORT=http for local HTTP testing.
+  if (process.env.PORT || process.env.MCP_TRANSPORT === "http") {
+    const port = Number(process.env.PORT || 8080);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      throw new Error("PORT must be an integer between 1 and 65535");
+    }
+
+    const httpServer = createHttpServer(async (req, res) => {
+      const pathname = new URL(req.url || "/", "http://localhost").pathname;
+      if (
+      pathname === "/.well-known/oauth-protected-resource" ||
+      pathname === "/.well-known/oauth-protected-resource/mcp"
+    ) {
+      if (req.method !== "GET") {
+        res.writeHead(405, { Allow: "GET" }).end();
+        return;
+      }
+
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=300",
+      });
+
+      res.end(JSON.stringify({
+        resource:
+          "https://gsc-mcp-server-180590969315.europe-west3.run.app/mcp/",
+        authorization_servers: [
+          "https://dev-qcfguwv7uyogdyng.us.auth0.com/"
+        ],
+        scopes_supported: ["use:mcp"],
+        bearer_methods_supported: ["header"]
+      }));
+      return;
+    }
+      if (pathname === "/health" && req.method === "GET") {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("ok");
+        return;
+      }
+      if (pathname !== "/mcp") {
+        res.writeHead(404).end("Not found");
+        return;
+      }
+      // Stateless Streamable HTTP: no persistent sessions or SSE endpoint.
+      if (req.method !== "POST") {
+        res.writeHead(405, { Allow: "POST" }).end("Method not allowed");
+        return;
+      }
+
+      // Require a valid Auth0 access token before processing MCP requests.
+      const authorized = await verifyAuth0Token(req.headers.authorization);
+
+      if (!authorized) {
+        res.writeHead(401, {
+          "Content-Type": "application/json",
+          "WWW-Authenticate":
+            'Bearer resource_metadata="https://gsc-mcp-server-180590969315.europe-west3.run.app/.well-known/oauth-protected-resource"',
+        });
+
+        res.end(JSON.stringify({
+          error: "unauthorized",
+          error_description: "A valid Auth0 access token with use:mcp scope is required",
+        }));
+        return;
+      }
+
+      const server = createServer();
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+      });
+      let closed = false;
+      const cleanup = () => {
+        if (closed) return;
+        closed = true;
+        void transport.close();
+        void server.close();
+      };
+      res.once("close", cleanup);
+
+      try {
+        await server.connect(transport);
+        await transport.handleRequest(req, res);
+      } catch (error) {
+        console.error("MCP HTTP request failed:", error);
+        if (!res.headersSent) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({
+            jsonrpc: "2.0",
+            error: { code: -32603, message: "Internal server error" },
+            id: null,
+          }));
+        } else if (!res.writableEnded) {
+          res.end();
+        }
+        cleanup();
+      }
+    });
+
+    httpServer.listen(port, "0.0.0.0", () => {
+      console.error(`GSC MCP server v2.5.1 listening on 0.0.0.0:${port}/mcp`);
+    });
+    return;
+  }
+
+  const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("GSC MCP server v2.5.1 running on stdio");
